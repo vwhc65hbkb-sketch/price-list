@@ -609,22 +609,25 @@ td.act{text-align:center;padding:11px 14px}
         items: buildOrderText(), total: fmt(sum) + ' руб.'
       };
 
-      fetch(WEBHOOK_URL, { 
+            fetch(WEBHOOK_URL, { 
         method: 'POST', 
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(orderData) 
       })
-      .then(function(res){ return res.json(); })
-      .then(function(data){ 
-        if(data.status === 'ok') { 
+      .then(function(res){ 
+        // Если запрос ушел без системных ошибок (Nodul принял данные)
+        if(res.ok || res.type === 'opaque') { 
           toast('Заказ успешно отправлен!'); 
           btn.innerHTML = '✅ Отправлено'; 
           setTimeout(function(){ cart={}; saveCart(); renderAll(); closeModal(); }, 1500); 
         } else {
-          toast(data.message || 'Ошибка в скрипте MAX', true); 
-          btn.innerHTML = orig; btn.disabled = false; 
+          throw new Error('Network response was not ok');
         }
       })
+      .catch(function(){ 
+        toast('Ошибка отправки. Проверьте интернет.', true); 
+        btn.innerHTML = orig; btn.disabled = false; 
+      });
       .catch(function(){ 
         toast('Ошибка отправки на сервер', true); 
         btn.innerHTML = orig; btn.disabled = false; 
