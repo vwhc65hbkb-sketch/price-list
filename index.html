@@ -203,11 +203,11 @@ td.act{text-align:center;padding:11px 14px}
 <script>
 (function(){
   // ==============================================================
-  // ВАШИ НАСТРОЙКИ
+  // ВАШИ НАСТРОЙКИ (ВСТАВЬТЕ СЮДА ВАШИ ССЫЛКИ)
   // ==============================================================
   
   // 1. Ссылка на таблицу (уже вставлена)
-  var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxFIGPVKRBysrzSCM66bXbMogx3EnU2xFL8dYCiHyDJrBIJ6oaIik1Z3tDqTFNGfdLkXrFZvmukjak/pub?output=csv"; 
+  var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxFIGPVKRBysrzSCM66bXbMogx3EnU2xFL8dYCiHyDJrBIJ6oaIik1Z3tDqTFNGfdLkXrFZvmukjak/pub?gid=0&single=true&output=csv"; 
 
   // 2. ВАША ССЫЛКА НА ПРОКСИ ИЗ GOOGLE APPS SCRIPT (заканчивается на /exec)
   var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
@@ -226,8 +226,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v10';
-  var STORAGE_CLIENT = 'price_client_v9';
+  var STORAGE_CART   = 'price_cart_v11';
+  var STORAGE_CLIENT = 'price_client_v10';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -236,31 +236,42 @@ td.act{text-align:center;padding:11px 14px}
   function saveCart(){ try { localStorage.setItem(STORAGE_CART, JSON.stringify(cart)); } catch(e){} }
   function saveClient(){ try { localStorage.setItem(STORAGE_CLIENT, JSON.stringify(client)); } catch(e){} }
 
+  /* ---------- УМНАЯ ЗАГРУЗКА ЧЕРЕЗ FETCH ---------- */
   function loadData() {
     if (!CSV_URL || !GAS_PROXY || GAS_PROXY.indexOf('ВАША_ССЫЛКА') !== -1) {
       $('#loader').innerHTML = '<span style="color:red">Ошибка: Вы не вставили ссылки в настройках кода.</span>';
       return;
     }
 
-    // Формируем запрос через ваш личный прокси Google
     var proxyUrl = GAS_PROXY + '?url=' + encodeURIComponent(CSV_URL);
 
-    Papa.parse(proxyUrl, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-        var data = results.data;
-        if (!data || data.length === 0 || !data[0]['Название']) {
-          $('#loader').innerHTML = '<span style="color:red">Ошибка формата данных. Проверьте заголовки в таблице.</span>';
-          return;
+    // Используем fetch (он лучше работает с Google Apps Script)
+    fetch(proxyUrl)
+      .then(function(response) {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.text();
+      })
+      .then(function(csvText) {
+        // Проверка, не вернул ли Google страницу с ошибкой или логином
+        if (csvText.indexOf('<html') !== -1 || csvText.indexOf('<!DOCTYPE') !== -1) {
+          throw new Error('Получен HTML вместо CSV');
         }
-        renderSite(data);
-      },
-      error: function(err) {
-        $('#loader').innerHTML = '<span style="color:red">Ошибка соединения с прокси. Проверьте, что скрипт развернут с доступом "Все" (Anyone).</span>';
-      }
-    });
+        
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            if (!results.data || results.data.length === 0 || !results.data[0]['Название']) {
+              $('#loader').innerHTML = '<span style="color:red">Ошибка формата данных. Проверьте заголовки в таблице.</span>';
+              return;
+            }
+            renderSite(results.data);
+          }
+        });
+      })
+      .catch(function(err) {
+        $('#loader').innerHTML = '<span style="color:red">Ошибка загрузки данных. Скрипт Google не отдаёт данные. Проверьте доступ "Все".</span>';
+      });
   }
 
   function renderSite(data) {
