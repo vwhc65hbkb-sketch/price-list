@@ -206,13 +206,13 @@ td.act{text-align:center;padding:11px 14px}
   // ВАШИ НАСТРОЙКИ (ВСТАВЬТЕ СЮДА ВАШИ ССЫЛКИ)
   // ==============================================================
   
-  // 1. Ссылка на таблицу (уже вставлена)
+  // 1. Ссылка на таблицу
   var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxFIGPVKRBysrzSCM66bXbMogx3EnU2xFL8dYCiHyDJrBIJ6oaIik1Z3tDqTFNGfdLkXrFZvmukjak/pub?gid=0&single=true&output=csv"; 
 
-  // 2. ВАША ССЫЛКА НА ПРОКСИ ИЗ GOOGLE APPS SCRIPT (заканчивается на /exec)
+  // 2. ВАША ССЫЛКА НА ПРОКСИ (ДЛЯ ЗАГРУЗКИ ТАБЛИЦЫ) ИЗ GOOGLE APPS SCRIPT
   var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
 
-  // 3. ВАША ССЫЛКА НА ВЕБХУК ИЗ ALBATO
+  // 3. ВАША ССЫЛКА НА СКРИПТ (ДЛЯ ОТПРАВКИ В MAX)
   var WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwnOwQEZm_GyLkpi3-03eMyrx3-2rggzyC4x9Aq3A5B08HikDJ6kzJrb6f7nsyUuVQ2/exec"; 
 
   // ==============================================================
@@ -226,8 +226,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v11';
-  var STORAGE_CLIENT = 'price_client_v10';
+  var STORAGE_CART   = 'price_cart_v12';
+  var STORAGE_CLIENT = 'price_client_v11';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -236,7 +236,6 @@ td.act{text-align:center;padding:11px 14px}
   function saveCart(){ try { localStorage.setItem(STORAGE_CART, JSON.stringify(cart)); } catch(e){} }
   function saveClient(){ try { localStorage.setItem(STORAGE_CLIENT, JSON.stringify(client)); } catch(e){} }
 
-  /* ---------- УМНАЯ ЗАГРУЗКА ЧЕРЕЗ FETCH ---------- */
   function loadData() {
     if (!CSV_URL || !GAS_PROXY || GAS_PROXY.indexOf('ВАША_ССЫЛКА') !== -1) {
       $('#loader').innerHTML = '<span style="color:red">Ошибка: Вы не вставили ссылки в настройках кода.</span>';
@@ -245,14 +244,12 @@ td.act{text-align:center;padding:11px 14px}
 
     var proxyUrl = GAS_PROXY + '?url=' + encodeURIComponent(CSV_URL);
 
-    // Используем fetch (он лучше работает с Google Apps Script)
     fetch(proxyUrl)
       .then(function(response) {
         if (!response.ok) throw new Error('Network response was not ok');
         return response.text();
       })
       .then(function(csvText) {
-        // Проверка, не вернул ли Google страницу с ошибкой или логином
         if (csvText.indexOf('<html') !== -1 || csvText.indexOf('<!DOCTYPE') !== -1) {
           throw new Error('Получен HTML вместо CSV');
         }
@@ -543,7 +540,11 @@ td.act{text-align:center;padding:11px 14px}
     if (!requireClient()) return;
 
     if (act === 'send') {
-      if (!WEBHOOK_URL) { toast('Ошибка: ссылка Albato не настроена', true); return; }
+      if (!WEBHOOK_URL || WEBHOOK_URL.indexOf('ВАША_ССЫЛКА') !== -1) { 
+        toast('Ошибка: ссылка на скрипт MAX не настроена', true); 
+        return; 
+      }
+      
       var orig = btn.innerHTML;
       btn.innerHTML = 'Отправка...'; btn.disabled = true;
       var sum = 0; for (var k in cart) { if (cart[k].price) sum += cart[k].price * cart[k].qty; }
@@ -554,9 +555,22 @@ td.act{text-align:center;padding:11px 14px}
         items: buildOrderText(), total: fmt(sum) + ' руб.'
       };
 
-      fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(orderData) })
-      .then(function(res){ if(res.ok) { toast('Отправлено!'); btn.innerHTML = '✅ Отправлено'; setTimeout(function(){ cart={}; saveCart(); renderAll(); closeModal(); }, 1500); } else throw new Error(); })
-      .catch(function(){ toast('Ошибка отправки', true); btn.innerHTML = orig; btn.disabled = false; });
+      fetch(WEBHOOK_URL, { 
+        method: 'POST', 
+        headers: {'Content-Type':'text/plain;charset=utf-8'}, // GAS иногда требует text/plain для POST без CORS проблем
+        body: JSON.stringify(orderData) 
+      })
+      .then(function(res){ 
+        if(res.ok) { 
+          toast('Заказ успешно отправлен!'); 
+          btn.innerHTML = '✅ Отправлено'; 
+          setTimeout(function(){ cart={}; saveCart(); renderAll(); closeModal(); }, 1500); 
+        } else throw new Error(); 
+      })
+      .catch(function(){ 
+        toast('Ошибка отправки', true); 
+        btn.innerHTML = orig; btn.disabled = false; 
+      });
       return;
     }
 
