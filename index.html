@@ -609,27 +609,21 @@ td.act{text-align:center;padding:11px 14px}
         items: buildOrderText(), total: fmt(sum) + ' руб.'
       };
 
-            fetch(WEBHOOK_URL, { 
+                  fetch(WEBHOOK_URL, { 
         method: 'POST', 
-        headers: {'Content-Type': 'application/json'},
+        mode: 'no-cors', // <--- ГЛАВНАЯ МАГИЯ: Отключаем проверку CORS
+        headers: {'Content-Type': 'text/plain'}, // text/plain проще всего проходит без блокировок
         body: JSON.stringify(orderData) 
       })
-      .then(function(res){ 
-        // Если запрос ушел без системных ошибок (Nodul принял данные)
-        if(res.ok || res.type === 'opaque') { 
-          toast('Заказ успешно отправлен!'); 
-          btn.innerHTML = '✅ Отправлено'; 
-          setTimeout(function(){ cart={}; saveCart(); renderAll(); closeModal(); }, 1500); 
-        } else {
-          throw new Error('Network response was not ok');
-        }
+      .then(function() { 
+        // Если запрос физически ушел, браузер не выдаст ошибку.
+        // Nodul получит данные и перешлет в MAX.
+        toast('Заказ успешно отправлен!'); 
+        btn.innerHTML = '✅ Отправлено'; 
+        setTimeout(function(){ cart={}; saveCart(); renderAll(); closeModal(); }, 1500); 
       })
-      .catch(function(){ 
+      .catch(function() { 
         toast('Ошибка отправки. Проверьте интернет.', true); 
-        btn.innerHTML = orig; btn.disabled = false; 
-      });
-      .catch(function(){ 
-        toast('Ошибка отправки на сервер', true); 
         btn.innerHTML = orig; btn.disabled = false; 
       });
       return;
