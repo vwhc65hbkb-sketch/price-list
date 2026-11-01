@@ -220,11 +220,13 @@ td.act{text-align:center;padding:11px 14px}
 <script>
 (function(){
   // ==============================================================
-  // ВАШИ ССЫЛКИ УЖЕ ВСТАВЛЕНЫ
+  // ВАШИ ССЫЛКИ
   // ==============================================================
   var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxFIGPVKRBysrzSCM66bXbMogx3EnU2xFL8dYCiHyDJrBIJ6oaIik1Z3tDqTFNGfdLkXrFZvmukjak/pub?gid=0&single=true&output=csv"; 
   var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
-  var WEBHOOK_URL = "https://webhook.nodul.ru/29665/dev/c84bec55-d67e-4c3a-bfe7-ddced07bd0b4"; 
+  
+  // ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ ИЗ NODUL
+  var WEBHOOK_URL = "СЮДА_ССЫЛКУ_ИЗ_NODUL"; 
   // ==============================================================
 
   var PICKUP_ADDRESS = "г. Новосибирск, ул. Котовского 12/1, кв 25, этаж 5";
@@ -236,8 +238,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v18';
-  var STORAGE_CLIENT = 'price_client_v17';
+  var STORAGE_CART   = 'price_cart_v20';
+  var STORAGE_CLIENT = 'price_client_v19';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -594,8 +596,8 @@ td.act{text-align:center;padding:11px 14px}
     if (!requireClient()) return;
 
     if (act === 'send') {
-      if (!WEBHOOK_URL || WEBHOOK_URL.indexOf('ВАША_ССЫЛКА') !== -1) { 
-        toast('Ошибка: ссылка на скрипт MAX не настроена', true); 
+      if (!WEBHOOK_URL || WEBHOOK_URL.indexOf('СЮДА_ССЫЛКУ') !== -1) { 
+        toast('Ошибка: ссылка на Nodul не настроена', true); 
         return; 
       }
       
@@ -609,7 +611,7 @@ td.act{text-align:center;padding:11px 14px}
         items: buildOrderText(), total: fmt(sum) + ' руб.'
       };
 
-                        // Формируем данные в виде формы (это обходит ошибки браузера)
+      // Универсальная отправка через URLSearchParams (обходит CORS и отдает данные в Nodul)
       var formData = new URLSearchParams();
       formData.append('name', orderData.name);
       formData.append('phone', orderData.phone);
@@ -620,8 +622,7 @@ td.act{text-align:center;padding:11px 14px}
       fetch(WEBHOOK_URL, { 
         method: 'POST', 
         mode: 'no-cors',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'}, 
-        body: formData.toString() 
+        body: formData 
       })
       .then(function() { 
         toast('Заказ успешно отправлен!'); 
@@ -632,6 +633,7 @@ td.act{text-align:center;padding:11px 14px}
         toast('Ошибка отправки. Проверьте интернет.', true); 
         btn.innerHTML = orig; btn.disabled = false; 
       });
+      return;
     }
 
     if (act === 'copy') {
