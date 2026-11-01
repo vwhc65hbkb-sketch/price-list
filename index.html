@@ -33,6 +33,11 @@ h1 span{color:#7dd3fc}
 .clear.show{display:block}
 .counter{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
 .counter b{color:var(--blue2);font-weight:700}
+.btn-update{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--blue2);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap}
+.btn-update:hover{border-color:var(--sky);background:var(--sky-soft)}
+.btn-update svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-update.spin svg{animation:spin 1s linear infinite}
+@keyframes spin{100%{transform:rotate(360deg)}}
 .btn-print{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:0 0 13px;scrollbar-width:none}
 .chip{flex:none;padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#41586f;font-size:12.5px;font-weight:600;text-decoration:none;white-space:nowrap;transition:.16s}
@@ -133,7 +138,7 @@ td.act{text-align:center;padding:11px 14px}
   thead th{padding:8px 12px}thead th:nth-child(1){width:32px}thead th:nth-child(3){width:104px}thead th:nth-child(4){width:74px}
   td{padding:10px 12px;font-size:13.5px}td.price{font-size:14px}td.act{padding:10px 8px}
   .add{min-width:58px;height:32px;padding:0 8px;font-size:12px}
-  .toolbar-inner{flex-wrap:wrap;gap:9px}.search{max-width:none;order:1;flex:1 1 100%}.btn-print{order:2;padding:10px 14px;font-size:12.5px}.counter{order:3;margin-left:auto}
+  .toolbar-inner{flex-wrap:wrap;gap:9px}.search{max-width:none;order:1;flex:1 1 100%}.btn-update{order:2;flex:1;justify-content:center}.btn-print{order:3;padding:10px 14px;font-size:12.5px}.counter{order:4;width:100%;text-align:right}
   .ci{padding:12px 10px;gap:9px}.ci-sum{min-width:66px;font-size:13px}.step{width:28px;height:28px}
   .modal-head{padding:16px 18px}.modal-foot{padding:16px 18px 20px}
   .act-btn{min-width:0;flex:1 1 calc(50% - 5px);padding:12px 12px;font-size:12.5px}.act-btn.clear-all{flex:0 0 100%}
@@ -163,11 +168,15 @@ td.act{text-align:center;padding:11px 14px}
         <input id="q" type="search" placeholder="Поиск по товарам..." autocomplete="off">
         <button class="clear" id="clear" type="button">×</button>
       </div>
-      <span class="counter" id="counter"></span>
+      <button class="btn-update" id="btnUpdate">
+        <svg viewBox="0 0 24 24"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        Обновить
+      </button>
       <button class="btn-print" onclick="window.print()">
         <svg viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><rect x="6" y="14" width="12" height="8"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg>
         Печать
       </button>
+      <span class="counter" id="counter"></span>
     </div>
     <nav class="chips" id="chips"></nav>
   </div>
@@ -203,16 +212,10 @@ td.act{text-align:center;padding:11px 14px}
 <script>
 (function(){
   // ==============================================================
-  // ВАШИ НАСТРОЙКИ (ВСТАВЬТЕ СЮДА ВАШИ ССЫЛКИ)
+  // ВАШИ НАСТРОЙКИ
   // ==============================================================
-  
-  // 1. Ссылка на таблицу
   var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxFIGPVKRBysrzSCM66bXbMogx3EnU2xFL8dYCiHyDJrBIJ6oaIik1Z3tDqTFNGfdLkXrFZvmukjak/pub?gid=0&single=true&output=csv"; 
-
-  // 2. ВАША ССЫЛКА НА ПРОКСИ (ДЛЯ ЗАГРУЗКИ ТАБЛИЦЫ) ИЗ GOOGLE APPS SCRIPT
   var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
-
-  // 3. ВАША ССЫЛКА НА СКРИПТ (ДЛЯ ОТПРАВКИ В MAX)
   var WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwnOwQEZm_GyLkpi3-03eMyrx3-2rggzyC4x9Aq3A5B08HikDJ6kzJrb6f7nsyUuVQ2/exec"; 
 
   // ==============================================================
@@ -226,8 +229,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v12';
-  var STORAGE_CLIENT = 'price_client_v11';
+  var STORAGE_CART   = 'price_cart_v13';
+  var STORAGE_CLIENT = 'price_client_v12';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -236,13 +239,18 @@ td.act{text-align:center;padding:11px 14px}
   function saveCart(){ try { localStorage.setItem(STORAGE_CART, JSON.stringify(cart)); } catch(e){} }
   function saveClient(){ try { localStorage.setItem(STORAGE_CLIENT, JSON.stringify(client)); } catch(e){} }
 
-  function loadData() {
+  function loadData(isUpdate) {
     if (!CSV_URL || !GAS_PROXY || GAS_PROXY.indexOf('ВАША_ССЫЛКА') !== -1) {
       $('#loader').innerHTML = '<span style="color:red">Ошибка: Вы не вставили ссылки в настройках кода.</span>';
       return;
     }
 
-    var proxyUrl = GAS_PROXY + '?url=' + encodeURIComponent(CSV_URL);
+    var btn = $('#btnUpdate');
+    if(isUpdate && btn) btn.classList.add('spin');
+    if(!isUpdate) $('#loader').style.display = 'flex';
+
+    // Добавляем параметр &t=... чтобы сбросить кэш Google и браузера
+    var proxyUrl = GAS_PROXY + '?url=' + encodeURIComponent(CSV_URL) + '&t=' + new Date().getTime();
 
     fetch(proxyUrl)
       .then(function(response) {
@@ -259,15 +267,20 @@ td.act{text-align:center;padding:11px 14px}
           skipEmptyLines: true,
           complete: function(results) {
             if (!results.data || results.data.length === 0 || !results.data[0]['Название']) {
-              $('#loader').innerHTML = '<span style="color:red">Ошибка формата данных. Проверьте заголовки в таблице.</span>';
+              if(!isUpdate) $('#loader').innerHTML = '<span style="color:red">Ошибка формата данных.</span>';
               return;
             }
             renderSite(results.data);
+            if(isUpdate) toast('Прайс обновлён!');
           }
         });
       })
       .catch(function(err) {
-        $('#loader').innerHTML = '<span style="color:red">Ошибка загрузки данных. Скрипт Google не отдаёт данные. Проверьте доступ "Все".</span>';
+        if(!isUpdate) $('#loader').innerHTML = '<span style="color:red">Ошибка загрузки данных.</span>';
+        else toast('Ошибка обновления', true);
+      })
+      .finally(function() {
+        if(btn) btn.classList.remove('spin');
       });
   }
 
@@ -300,6 +313,7 @@ td.act{text-align:center;padding:11px 14px}
     var chips = $('#chips');
     var catIndex = 1;
     var html = '';
+    chips.innerHTML = '';
 
     for (var catName in groups) {
       var items = groups[catName];
@@ -557,7 +571,7 @@ td.act{text-align:center;padding:11px 14px}
 
       fetch(WEBHOOK_URL, { 
         method: 'POST', 
-        headers: {'Content-Type':'text/plain;charset=utf-8'}, // GAS иногда требует text/plain для POST без CORS проблем
+        headers: {'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify(orderData) 
       })
       .then(function(res){ 
@@ -620,7 +634,10 @@ td.act{text-align:center;padding:11px 14px}
   function apply(){ var q = input.value.trim().toLowerCase(); allRows.forEach(function(r){ r.classList.toggle('hide', !(!q || r.textContent.toLowerCase().indexOf(q)!==-1)); }); var v = allRows.filter(function(r){ return !r.classList.contains('hide'); }).length; if(empty) empty.classList.toggle('show', v===0); clearBtn.classList.toggle('show', q.length>0); updateCounter(); }
   input.addEventListener('input', apply); clearBtn.addEventListener('click', function(){ input.value=''; input.focus(); apply(); });
 
-  loadData();
+  // Кнопка обновления
+  $('#btnUpdate').addEventListener('click', function(){ loadData(true); });
+
+  loadData(false);
 })();
 </script>
 </body>
