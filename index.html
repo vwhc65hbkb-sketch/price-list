@@ -126,7 +126,7 @@ td.act{text-align:center;padding:11px 14px}
 .toast{position:fixed;left:50%;bottom:100px;z-index:200;transform:translate(-50%,20px);padding:12px 22px;border-radius:12px;background:#0b3a5d;color:#fff;font-size:13.5px;font-weight:600;box-shadow:0 14px 32px -12px rgba(6,32,52,.9);opacity:0;pointer-events:none;transition:.25s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:#c0392b}
-.loader{display:flex;justify-content:center;align-items:center;padding:80px 0;color:var(--muted);font-size:15px}
+.loader{display:flex;justify-content:center;align-items:center;padding:80px 0;color:var(--muted);font-size:15px;text-align:center;line-height:1.5}
 @media (max-width:680px){
   .wrap{padding:0 14px}
   .card-head{padding:15px 16px}
@@ -208,11 +208,14 @@ td.act{text-align:center;padding:11px 14px}
 (function(){
   /* ====== НАСТРОЙКА ====== */
   
-  // Сюда я уже вставил вашу ссылку на таблицу!
+  // Ссылка на вашу Google Таблицу (уже вставлена)
   var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxFIGPVKRBysrzSCM66bXbMogx3EnU2xFL8dYCiHyDJrBIJ6oaIik1Z3tDqTFNGfdLkXrFZvmukjak/pub?gid=0&single=true&output=csv"; 
 
-  /* ВСТАВЬТЕ ССЫЛКУ ВЕБХУКА ИЗ ALBATO */
+  // ВСТАВЬТЕ ССЫЛКУ ВЕБХУКА ИЗ ALBATO
   var WEBHOOK_URL = "https://h.albato.ru/wh/38/1lf20i6/ux_tAQCMMrvxbNUUFNLLTjbw_jaOOUjW-0ioXErMv7k/"; 
+
+  // Если на GitHub таблица не загрузится напрямую, создайте прокси в Google Apps Script (как в инструкции) и вставьте ссылку сюда. Пока оставьте пустым.
+  var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
 
   var PICKUP_ADDRESS = "г. Новосибирск, ул. Котовского 12/1, кв 25, этаж 5";
   var PICKUP_POINTS = ["Маркса", "Троллейный", "Чистая Слобода", "Ясный берег", "Горский", "ГПНТБ", "Волочаевская"];
@@ -224,8 +227,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v8';
-  var STORAGE_CLIENT = 'price_client_v7';
+  var STORAGE_CART   = 'price_cart_v10';
+  var STORAGE_CLIENT = 'price_client_v9';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -234,32 +237,30 @@ td.act{text-align:center;padding:11px 14px}
   function saveCart(){ try { localStorage.setItem(STORAGE_CART, JSON.stringify(cart)); } catch(e){} }
   function saveClient(){ try { localStorage.setItem(STORAGE_CLIENT, JSON.stringify(client)); } catch(e){} }
 
-  /* ---------- Загрузка из Google Таблиц (через прокси) ---------- */
+  /* ---------- Загрузка из Google Таблиц ---------- */
   function loadData() {
     if (!CSV_URL || !CSV_URL.startsWith('http')) {
       $('#loader').innerHTML = '<span style="color:red">Ошибка: Не указана ссылка на Google Таблицу.</span>';
       return;
     }
 
-    // Используем прокси, чтобы обойти блокировку браузера
-    var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(CSV_URL);
+    // Если указан прокси, используем его. Если нет — грузим напрямую (на GitHub это работает).
+    var targetUrl = GAS_PROXY ? (GAS_PROXY + '?url=' + encodeURIComponent(CSV_URL)) : CSV_URL;
 
-    Papa.parse(proxyUrl, {
+    Papa.parse(targetUrl, {
       download: true,
       header: true,
       skipEmptyLines: true,
       complete: function(results) {
         var data = results.data;
-        
-        // Проверка, что таблица считалась правильно
         if (!data || data.length === 0 || !data[0]['Название']) {
-          $('#loader').innerHTML = '<span style="color:red">Ошибка формата таблицы. Убедитесь, что первая строка содержит заголовки: Категория, Название, Цена, Единица, Метка.</span>';
+          $('#loader').innerHTML = '<span style="color:red">Ошибка формата данных. Проверьте заголовки в первой строке таблицы: Категория, Название, Цена, Единица, Метка.</span>';
           return;
         }
         renderSite(data);
       },
-      error: function() {
-        $('#loader').innerHTML = '<span style="color:red">Ошибка соединения. Не удалось загрузить данные из Google.</span>';
+      error: function(err) {
+        $('#loader').innerHTML = '<span style="color:red">Ошибка загрузки данных. Проверьте ссылку на таблицу или настройте прокси Google Apps Script.</span>';
       }
     });
   }
