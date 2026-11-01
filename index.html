@@ -15,7 +15,6 @@ html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 
-/* Компактная шапка */
 .hero{position:relative;overflow:hidden;color:#fff;padding:32px 0 28px;background:radial-gradient(900px 380px at 8% -30%,rgba(56,189,248,.45),transparent 60%),radial-gradient(700px 320px at 95% 120%,rgba(6,182,212,.35),transparent 62%),linear-gradient(140deg,#062a44,#0b3a5d 45%,#0a4d78)}
 .hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px);background-size:24px 24px;opacity:.55;pointer-events:none}
 .hero .wrap{position:relative;z-index:2}
@@ -108,7 +107,6 @@ td.act{text-align:center;padding:11px 14px}
 .ci-weight-unit{font-size:12px;font-weight:600;color:var(--muted)}
 .ci-sum{min-width:82px;text-align:right;font-size:14px;font-weight:800;color:#0b3a5d}
 .ci-sum small{display:block;font-size:10.5px;font-weight:600;color:var(--muted);margin-top:1px}
-/* Кнопка удаления */
 .ci-del{flex:none;width:26px;height:26px;border-radius:6px;border:1px solid transparent;background:#fdeceb;color:#c0392b;font-size:18px;line-height:1;display:grid;place-items:center;cursor:pointer;transition:.15s;margin-left:4px}
 .ci-del:hover{background:#e0574b;color:#fff}
 .weight-warning{margin-top:12px;padding:11px 14px;background:#fff8e1;border-radius:10px;font-size:12px;color:#b78103;line-height:1.4;border:1px solid #ffe082;display:flex;gap:8px}
@@ -226,7 +224,7 @@ td.act{text-align:center;padding:11px 14px}
   var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
   
   // ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ ИЗ NODUL
-  var WEBHOOK_URL = "СЮДА_ССЫЛКУ_ИЗ_NODUL"; 
+  var WEBHOOK_URL = "https://webhook.nodul.ru/29665/dev/c84bec55-d67e-4c3a-bfe7-ddced07bd0b4"; 
   // ==============================================================
 
   var PICKUP_ADDRESS = "г. Новосибирск, ул. Котовского 12/1, кв 25, этаж 5";
@@ -238,8 +236,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v20';
-  var STORAGE_CLIENT = 'price_client_v19';
+  var STORAGE_CART   = 'price_cart_v21';
+  var STORAGE_CLIENT = 'price_client_v20';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -611,28 +609,20 @@ td.act{text-align:center;padding:11px 14px}
         items: buildOrderText(), total: fmt(sum) + ' руб.'
       };
 
-      // Универсальная отправка через URLSearchParams (обходит CORS и отдает данные в Nodul)
-      var formData = new URLSearchParams();
-      formData.append('name', orderData.name);
-      formData.append('phone', orderData.phone);
-      formData.append('delivery', orderData.delivery);
-      formData.append('items', orderData.items);
-      formData.append('total', orderData.total);
-
-      fetch(WEBHOOK_URL, { 
-        method: 'POST', 
-        mode: 'no-cors',
-        body: formData 
-      })
-      .then(function() { 
-        toast('Заказ успешно отправлен!'); 
-        btn.innerHTML = '✅ Отправлено'; 
-        setTimeout(function(){ cart={}; saveCart(); renderAll(); closeModal(); }, 1500); 
-      })
-      .catch(function() { 
-        toast('Ошибка отправки. Проверьте интернет.', true); 
-        btn.innerHTML = orig; btn.disabled = false; 
-      });
+      // ИСПОЛЬЗУЕМ XMLHTTPREQUEST С APPLICATION/JSON (ТО, ЧТО ВЫ ПРОСИЛИ)
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", WEBHOOK_URL, true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          toast('Заказ успешно отправлен!'); 
+          btn.innerHTML = '✅ Отправлено'; 
+          setTimeout(function(){ cart={}; saveCart(); renderAll(); closeModal(); }, 1500); 
+        }
+      };
+      
+      xhr.send(JSON.stringify(orderData));
       return;
     }
 
