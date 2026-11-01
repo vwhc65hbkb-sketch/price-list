@@ -15,6 +15,7 @@ html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 
+/* Компактная шапка */
 .hero{position:relative;overflow:hidden;color:#fff;padding:32px 0 28px;background:radial-gradient(900px 380px at 8% -30%,rgba(56,189,248,.45),transparent 60%),radial-gradient(700px 320px at 95% 120%,rgba(6,182,212,.35),transparent 62%),linear-gradient(140deg,#062a44,#0b3a5d 45%,#0a4d78)}
 .hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px);background-size:24px 24px;opacity:.55;pointer-events:none}
 .hero .wrap{position:relative;z-index:2}
@@ -90,7 +91,7 @@ td.act{text-align:center;padding:11px 14px}
 .modal-head h3{margin:0;font-size:18px;font-weight:800;flex:1}
 .modal-head .m-count{font-size:12.5px;font-weight:700;color:var(--blue2);background:var(--sky-soft);padding:5px 12px;border-radius:999px}
 .close{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:20px;cursor:pointer}
-.modal-body{overflow-y:auto;padding:8px 10px;flex:1}
+.modal-body{overflow-y:auto;padding:8px 10px;flex:1;min-height:100px} /* Добавили min-height */
 .modal-foot{padding:18px 24px 22px;border-top:1px solid var(--line);background:#fbfdff;border-radius:0 0 22px 22px}
 .ci{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:12px}
 .ci+.ci{border-top:1px solid var(--line2)}
@@ -140,6 +141,8 @@ td.act{text-align:center;padding:11px 14px}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:#c0392b}
 .loader{display:flex;justify-content:center;align-items:center;padding:80px 0;color:var(--muted);font-size:15px;text-align:center;line-height:1.5}
+
+/* МОБИЛЬНАЯ ВЕРСИЯ (ИСПРАВЛЕНИЕ КОРЗИНЫ) */
 @media (max-width:680px){
   .wrap{padding:0 14px}
   .hero{padding:24px 0 20px}
@@ -148,10 +151,49 @@ td.act{text-align:center;padding:11px 14px}
   td{padding:10px 12px;font-size:13.5px}td.price{font-size:14px}td.act{padding:10px 8px}
   .add{min-width:58px;height:32px;padding:0 8px;font-size:12px}
   .toolbar-inner{flex-wrap:wrap;gap:9px}.search{max-width:none;order:1;flex:1 1 100%}.btn-update{order:2;flex:1;justify-content:center}.btn-print{order:3;padding:10px 14px;font-size:12.5px}.counter{order:4;width:100%;text-align:right}
-  .ci{padding:12px 10px;gap:9px}.ci-sum{min-width:66px;font-size:13px}.step{width:28px;height:28px}
-  .modal-head{padding:16px 18px}.modal-foot{padding:16px 18px 20px}
-  .act-btn{min-width:0;flex:1 1 calc(50% - 5px);padding:12px 12px;font-size:12.5px}.act-btn.clear-all{flex:0 0 100%}
-  .seg-btn{padding:10px 4px;font-size:11.5px}
+  
+  /* УВЕЛИЧИВАЕМ ОКНО КОРЗИНЫ И ДЕЛАЕМ СПИСОК ПРОКРУЧИВАЕМЫМ */
+  .modal {
+    max-height: 95vh;
+    max-height: 95dvh;
+    height: 95vh;
+    height: 95dvh; 
+  }
+  .modal-head { padding: 14px 16px; }
+  .modal-body { 
+    padding: 6px 8px; 
+    min-height: 30vh; /* Гарантируем, что списку будет где развернуться */
+  }
+  .modal-foot { 
+    padding: 12px 16px 18px; /* Уменьшаем отступы формы, чтобы освободить место */
+  }
+  
+  /* Делаем карточки товаров и форму компактнее */
+  .ci { padding: 10px 8px; gap: 8px; }
+  .ci-name { font-size: 13px; }
+  .ci-price { font-size: 12px; }
+  .ci-qty { min-width: 28px; font-size: 13px; }
+  .step { width: 26px; height: 26px; font-size: 14px; }
+  .ci-weight { width: 55px; padding: 4px 6px; font-size: 13px; }
+  .ci-sum { min-width: 65px; font-size: 13px; }
+  
+  .field { padding: 9px 12px; }
+  .field input, .field select { font-size: 13px; }
+  .delivery-label { margin-bottom: 6px; }
+  .seg { margin-bottom: 8px; gap: 5px; }
+  .seg-btn { padding: 8px 4px; font-size: 11px; gap: 4px; }
+  
+  .total { padding-bottom: 10px; }
+  .total b { font-size: 20px; }
+  
+  .note { margin-top: 10px; min-height: 44px; padding: 10px 12px; font-size: 13px;}
+  
+  .actions { margin-top: 8px; gap: 6px; }
+  .act-btn { min-width: 0; flex: 1 1 calc(50% - 5px); padding: 10px 12px; font-size: 12px; }
+  .act-btn.clear-all { flex: 0 0 100%; }
+  
+  .fab { right: 14px; bottom: 14px; padding: 13px 18px 13px 15px; font-size: 13.5px; border-radius: 14px; }
+  .fab .sum { display: none; }
 }
 </style>
 </head>
@@ -224,7 +266,7 @@ td.act{text-align:center;padding:11px 14px}
   var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
   
   // ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ ИЗ NODUL
-  var WEBHOOK_URL = "https://webhook.nodul.ru/29665/dev/c84bec55-d67e-4c3a-bfe7-ddced07bd0b4"; 
+  var WEBHOOK_URL = "https://webhook.nodul.ru/29665/dev/c84bec55-d67e-4c3a-bfe7-ddced07bd0b4"; // <--- УБЕДИТЕСЬ, ЧТО ЗДЕСЬ ВАША ССЫЛКА
   // ==============================================================
 
   var PICKUP_ADDRESS = "г. Новосибирск, ул. Котовского 12/1, кв 25, этаж 5";
@@ -236,8 +278,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v21';
-  var STORAGE_CLIENT = 'price_client_v20';
+  var STORAGE_CART   = 'price_cart_v22';
+  var STORAGE_CLIENT = 'price_client_v21';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -594,7 +636,7 @@ td.act{text-align:center;padding:11px 14px}
     if (!requireClient()) return;
 
     if (act === 'send') {
-      if (!WEBHOOK_URL || WEBHOOK_URL.indexOf('СЮДА_ССЫЛКУ') !== -1) { 
+      if (!WEBHOOK_URL || WEBHOOK_URL.indexOf('https://webhook.nodul.ru/29665/dev/c84bec55-d67e-4c3a-bfe7-ddced07bd0b4') !== -1) { 
         toast('Ошибка: ссылка на Nodul не настроена', true); 
         return; 
       }
@@ -609,7 +651,6 @@ td.act{text-align:center;padding:11px 14px}
         items: buildOrderText(), total: fmt(sum) + ' руб.'
       };
 
-      // ИСПОЛЬЗУЕМ XMLHTTPREQUEST С APPLICATION/JSON (ТО, ЧТО ВЫ ПРОСИЛИ)
       var xhr = new XMLHttpRequest();
       xhr.open("POST", WEBHOOK_URL, true);
       xhr.setRequestHeader("Content-Type", "application/json");
