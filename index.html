@@ -10,12 +10,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box}
+/* ГЛАВНОЕ ИСПРАВЛЕНИЕ: жесткое скрытие всех элементов с классом hide */
+.hide { display: none !important; }
+
 :root{--bg:#eef5fb;--card:#fff;--ink:#0d2337;--muted:#7288a0;--line:#dbe7f2;--line2:#eef4fa;--blue:#0b3a5d;--blue2:#1b6ca8;--sky:#38bdf8;--sky-soft:#e8f5ff;--accent:#0ea5e9;--green:#10b981;--radius:18px;--red:#e0574b;}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 
-/* Компактная шапка */
 .hero{position:relative;overflow:hidden;color:#fff;padding:32px 0 28px;background:radial-gradient(900px 380px at 8% -30%,rgba(56,189,248,.45),transparent 60%),radial-gradient(700px 320px at 95% 120%,rgba(6,182,212,.35),transparent 62%),linear-gradient(140deg,#062a44,#0b3a5d 45%,#0a4d78)}
 .hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px);background-size:24px 24px;opacity:.55;pointer-events:none}
 .hero .wrap{position:relative;z-index:2}
@@ -43,7 +45,7 @@ h1 span{color:#7dd3fc}
 @keyframes spin{100%{transform:rotate(360deg)}}
 .btn-print{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:0 0 13px;scrollbar-width:none}
-.chip{flex:none;padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#41586f;font-size:12.5px;font-weight:600;text-decoration:none;white-space:nowrap;transition:.16s}
+.chip{flex:none;padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#41586f;font-size:12.5px;font-weight:600;text-decoration:none;white-space:nowrap;transition:.16s;cursor:pointer}
 .chip:hover{border-color:var(--sky);color:var(--blue2);background:var(--sky-soft)}
 main{padding:6px 0 110px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin:20px 0;overflow:hidden;box-shadow:0 1px 2px rgba(11,58,93,.04),0 18px 40px -30px rgba(11,58,93,.55);scroll-margin-top:138px}
@@ -77,6 +79,7 @@ td.act{text-align:center;padding:11px 14px}
 .badge.new{background:#e6f6ff;color:#0b6ea8}
 .empty{display:none;text-align:center;padding:70px 20px;color:var(--muted)}
 .empty.show{display:block}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
 .fab{position:fixed;right:22px;bottom:22px;z-index:60;display:flex;align-items:center;gap:11px;padding:14px 22px 14px 18px;border:0;border-radius:16px;background:linear-gradient(135deg,#0b3a5d,#1b6ca8);color:#fff;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer;box-shadow:0 14px 34px -12px rgba(11,58,93,.95);transform:translateY(120%);opacity:0;transition:transform .28s,opacity .2s}
 .fab.show{transform:translateY(0);opacity:1}
 .fab svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -121,7 +124,6 @@ td.act{text-align:center;padding:11px 14px}
 .field input::placeholder{color:#9fb2c5;font-weight:500}
 .field:focus-within{border-color:var(--sky);box-shadow:0 0 0 4px rgba(56,189,248,.16)}
 .field.req{border-color:#f3d5d1;background:#fffafa}
-.field.hide{display:none}
 .delivery{margin-top:10px}
 .delivery-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin:0 0 8px 4px}
 .seg{display:flex;gap:7px;margin-bottom:9px}
@@ -142,7 +144,6 @@ td.act{text-align:center;padding:11px 14px}
 .toast.err{background:#c0392b}
 .loader{display:flex;justify-content:center;align-items:center;padding:80px 0;color:var(--muted);font-size:15px;text-align:center;line-height:1.5}
 
-/* МОБИЛЬНАЯ ВЕРСИЯ (ИСПРАВЛЕНИЕ КОРЗИНЫ) */
 @media (max-width:680px){
   .wrap{padding:0 14px}
   .hero{padding:24px 0 20px}
@@ -152,33 +153,11 @@ td.act{text-align:center;padding:11px 14px}
   .add{min-width:58px;height:32px;padding:0 8px;font-size:12px}
   .toolbar-inner{flex-wrap:wrap;gap:9px}.search{max-width:none;order:1;flex:1 1 100%}.btn-update{order:2;flex:1;justify-content:center}.btn-print{order:3;padding:10px 14px;font-size:12.5px}.counter{order:4;width:100%;text-align:right}
   
-  /* Делаем окно корзины плавно прокручиваемым целиком */
-  .modal {
-    top: 5dvh;
-    height: 95dvh;
-    max-height: 95dvh;
-    border-radius: 20px 20px 0 0;
-    display: block; /* Отключаем flexbox */
-    overflow-y: auto; /* Разрешаем прокрутку всего окна */
-    -webkit-overflow-scrolling: touch;
-  }
-  .modal-head { 
-    padding: 14px 16px; 
-    border-radius: 20px 20px 0 0;
-    position: sticky; /* Шапка прилипает к верху при прокрутке */
-    top: 0;
-    background: #f8fcff;
-    z-index: 10;
-  }
-  .modal-body { 
-    padding: 8px 10px; 
-  }
-  .modal-foot { 
-    padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
-    border-radius: 0;
-  }
+  .modal { top: 5dvh; height: 95dvh; max-height: 95dvh; border-radius: 20px 20px 0 0; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .modal-head { padding: 14px 16px; border-radius: 20px 20px 0 0; position: sticky; top: 0; background: #f8fcff; z-index: 10; }
+  .modal-body { padding: 8px 10px; }
+  .modal-foot { padding: 12px 16px calc(24px + env(safe-area-inset-bottom)); border-radius: 0; }
   
-  /* Делаем карточки товаров и форму компактнее, чтобы влезло больше */
   .ci { padding: 10px 8px; gap: 8px; }
   .ci-name { font-size: 13px; }
   .ci-price { font-size: 12px; }
@@ -196,7 +175,6 @@ td.act{text-align:center;padding:11px 14px}
   
   .total { padding-bottom: 10px; }
   .total b { font-size: 20px; }
-  
   .note { margin-top: 10px; min-height: 44px; padding: 10px 12px; font-size: 13px;}
   
   .actions { margin-top: 10px; gap: 8px; }
@@ -212,10 +190,10 @@ td.act{text-align:center;padding:11px 14px}
 
 <header class="hero">
   <div class="wrap">
-    <div class="brand"><span class="dot"></span>Заморозка · осень 2026</div>
+    <div class="brand"><span class="dot"></span>Заморозка · октябрь-ноябрь 2026</div>
     <h1>Прайс-лист<br><span>рыба · мясо · морепродукты</span></h1>
     <p class="sub">Доставка через курьера, раздачи или самовывоз. Все позиции — глубокой заморозки.</p>
-    <div class="hint-small">Нажмите «+» у товара, чтобы добавить его в заказ.</div>
+    <div class="hint-small">Икра горбуши или кеты нового улова 2026 — 15 000 ₽/кг (фасовка от 0,25 и 0,5 кг)</div>
   </div>
 </header>
 
@@ -224,7 +202,7 @@ td.act{text-align:center;padding:11px 14px}
     <div class="toolbar-inner">
       <div class="search">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Поиск по товарам..." autocomplete="off">
+        <input id="q" type="search" placeholder="Поиск по названию..." autocomplete="off">
         <button class="clear" id="clear" type="button">×</button>
       </div>
       <button class="btn-update" id="btnUpdate">
@@ -246,6 +224,7 @@ td.act{text-align:center;padding:11px 14px}
   <div class="empty" id="empty">
     <b>Ничего не найдено</b>
     Попробуйте другой запрос.
+    <button class="act-btn" style="margin-top:20px; max-width:200px; margin-left:auto; margin-right:auto; display:block;" onclick="document.getElementById('q').value=''; document.getElementById('q').dispatchEvent(new Event('input'));">Сбросить поиск</button>
   </div>
 </main>
 
@@ -270,15 +249,9 @@ td.act{text-align:center;padding:11px 14px}
 
 <script>
 (function(){
-  // ==============================================================
-  // ВАШИ ССЫЛКИ
-  // ==============================================================
   var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxFIGPVKRBysrzSCM66bXbMogx3EnU2xFL8dYCiHyDJrBIJ6oaIik1Z3tDqTFNGfdLkXrFZvmukjak/pub?gid=0&single=true&output=csv"; 
   var GAS_PROXY = "https://script.google.com/macros/s/AKfycbyFfTe2Sk6WVnNTrAAaggZbLlYRhYvdaN78P5wlHEhHABLtbJJp6h75YyJDhkiW_Dq-/exec"; 
-  
-  // ВАША ССЫЛКА ИЗ NODUL
   var WEBHOOK_URL = "https://webhook.nodul.ru/29665/dev/c84bec55-d67e-4c3a-bfe7-ddced07bd0b4"; 
-  // ==============================================================
 
   var PICKUP_ADDRESS = "г. Новосибирск, ул. Котовского 12/1, кв 25, этаж 5";
   var PICKUP_POINTS = ["Маркса", "Троллейный", "Чистая Слобода", "Ясный берег", "Горский", "ГПНТБ", "Волочаевская"];
@@ -289,8 +262,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v25';
-  var STORAGE_CLIENT = 'price_client_v24';
+  var STORAGE_CART   = 'price_cart_v31';
+  var STORAGE_CLIENT = 'price_client_v30';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
@@ -301,6 +274,7 @@ td.act{text-align:center;padding:11px 14px}
 
   function getCategoryIcon(cat) {
     var c = cat.toLowerCase();
+    if (c.indexOf('икра') !== -1) return '🥫';
     if (c.indexOf('консерв') !== -1) return '🐟';
     if (c.indexOf('кревет') !== -1 || c.indexOf('морепрод') !== -1) return '🍤';
     if (c.indexOf('филе') !== -1 || c.indexOf('стейк') !== -1) return '🍣';
@@ -430,7 +404,7 @@ td.act{text-align:center;padding:11px 14px}
       catIndex++;
     }
 
-    main.innerHTML = html + '<div class="empty" id="empty"><b>Ничего не найдено</b>Попробуйте другой запрос.</div>';
+    main.innerHTML = html + '<div class="empty" id="empty"><b>Ничего не найдено</b>Попробуйте другой запрос.<button class="act-btn" style="margin-top:20px; max-width:200px; margin-left:auto; margin-right:auto; display:block;" onclick="document.getElementById(\'q\').value=\'\'; document.getElementById(\'q\').dispatchEvent(new Event(\'input\'));">Сбросить поиск</button></div>';
     initEvents();
   }
 
@@ -445,6 +419,29 @@ td.act{text-align:center;padding:11px 14px}
       });
     });
     updateCounter();
+
+    var chipsContainer = $('#chips');
+    if (chipsContainer) {
+      chipsContainer.addEventListener('click', function(e) {
+        var chip = e.target.closest('.chip');
+        if (!chip) return;
+        e.preventDefault();
+        
+        var targetId = chip.getAttribute('href');
+        var targetEl = document.querySelector(targetId);
+        
+        if (targetEl) {
+          var headerOffset = 130;
+          var elementPosition = targetEl.getBoundingClientRect().top;
+          var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      });
+    }
   }
 
   function renderRow(row) {
@@ -551,7 +548,6 @@ td.act{text-align:center;padding:11px 14px}
       html += '</div>';
     });
     
-    // Добавляем предупреждение в список товаров
     var warningHtml = hasWeight ? '<div class="weight-warning"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div><b>Внимание:</b> для весовых товаров указан предварительный вес. Точный вес и сумма будут известны перед выдачей.</div></div>' : '';
     mBody.innerHTML = warningHtml + html;
 
@@ -721,9 +717,52 @@ td.act{text-align:center;padding:11px 14px}
   function toast(msg, err){ toastEl.textContent=msg; toastEl.classList.toggle('err',!!err); toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(function(){toastEl.classList.remove('show')},3000); }
 
   var input = $('#q'), clearBtn = $('#clear'), empty = $('#empty'), counter = $('#counter');
-  function updateCounter(){ var v = allRows.filter(function(r){ return !r.classList.contains('hide'); }).length; counter.innerHTML = input.value.trim() ? 'Найдено: <b>'+v+'</b>' : 'Позиций: <b>'+allRows.length+'</b>'; }
-  function apply(){ var q = input.value.trim().toLowerCase(); allRows.forEach(function(r){ r.classList.toggle('hide', !(!q || r.textContent.toLowerCase().indexOf(q)!==-1)); }); var v = allRows.filter(function(r){ return !r.classList.contains('hide'); }).length; if(empty) empty.classList.toggle('show', v===0); clearBtn.classList.toggle('show', q.length>0); updateCounter(); }
-  input.addEventListener('input', apply); clearBtn.addEventListener('click', function(){ input.value=''; input.focus(); apply(); });
+
+  function updateCounter(){ 
+    var v = allRows.filter(function(r){ return !r.classList.contains('hide'); }).length; 
+    counter.innerHTML = input.value.trim() ? 'Найдено: <b>'+v+'</b>' : 'Позиций: <b>'+allRows.length+'</b>'; 
+  }
+
+  function apply(){ 
+    var q = input.value.trim().toLowerCase(); 
+    
+    if (!q) {
+      allRows.forEach(function(r) { r.classList.remove('hide'); });
+      $$('.card').forEach(function(c) { c.classList.remove('hide'); });
+      $('#chips').style.display = 'flex';
+      if(empty) empty.classList.remove('show');
+      clearBtn.classList.remove('show');
+      updateCounter();
+      return;
+    }
+
+    var words = q.split(/\s+/).filter(Boolean);
+    
+    allRows.forEach(function(r){ 
+      var text = (r.dataset.name || '').toLowerCase(); 
+      
+      var match = words.every(function(word) { 
+        return text.indexOf(word) !== -1; 
+      });
+      r.classList.toggle('hide', !match); 
+    }); 
+
+    var cards = $$('.card');
+    cards.forEach(function(card) {
+      var hasVisible = card.querySelectorAll('tbody tr:not(.hide)').length > 0;
+      card.classList.toggle('hide', !hasVisible);
+    });
+    
+    $('#chips').style.display = 'none';
+
+    var visible = allRows.filter(function(r){ return !r.classList.contains('hide'); }).length; 
+    if(empty) empty.classList.toggle('show', visible === 0); 
+    clearBtn.classList.toggle('show', q.length > 0); 
+    updateCounter(); 
+  }
+
+  input.addEventListener('input', apply); 
+  clearBtn.addEventListener('click', function(){ input.value=''; input.focus(); apply(); });
 
   $('#btnUpdate').addEventListener('click', function(){ loadData(true); });
 
