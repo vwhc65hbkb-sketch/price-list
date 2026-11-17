@@ -13,7 +13,7 @@
 .hide { display: none !important; }
 
 :root{--bg:#eef5fb;--card:#fff;--ink:#0d2337;--muted:#7288a0;--line:#dbe7f2;--line2:#eef4fa;--blue:#0b3a5d;--blue2:#1b6ca8;--sky:#38bdf8;--sky-soft:#e8f5ff;--accent:#0ea5e9;--green:#10b981;--radius:18px;--red:#e0574b;}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;}
 body{
   margin:0;
   background:var(--bg);
@@ -22,7 +22,7 @@ body{
   font-size:15px;
   line-height:1.45;
   -webkit-font-smoothing:antialiased;
-  overflow-x:hidden; /* Запрет горизонтального скролла */
+  overflow-x:hidden; /* Блокируем горизонтальный скролл */
   width:100%;
 }
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
@@ -61,7 +61,7 @@ main{padding:6px 0 110px}
 .card-head h2 small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
 .count{flex:none;font-size:11.5px;font-weight:700;color:var(--blue2);background:var(--sky-soft);padding:5px 12px;border-radius:999px}
 
-/* Жесткая фиксация ширины таблицы */
+/* Жесткая фиксация таблицы */
 table{width:100%;border-collapse:collapse;table-layout:fixed;}
 thead th{text-align:left;padding:10px 22px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#93a9be;background:#f6fafe;border-bottom:1px solid var(--line2)}
 thead th:nth-child(1){width:56px}
@@ -77,7 +77,7 @@ td.n{color:#9fb2c5;font-size:12.5px;font-weight:600;padding-top:13px}
 td.name{line-height:1.42;font-weight:500}
 td.price{text-align:right;white-space:nowrap;font-weight:700;color:#0b3a5d;font-size:15px}
 td.price .v::after{content:" ₽";font-size:.72em;font-weight:600;opacity:.45;margin-left:1px}
-td.price small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px;white-space:normal;}
+td.price small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px;white-space:normal;line-height:1.3;}
 td.act{text-align:center;padding:11px 14px}
 
 .add{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:74px;height:34px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--blue2);font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.16s;white-space:nowrap}
@@ -164,30 +164,46 @@ td.act{text-align:center;padding:11px 14px}
 .toast.err{background:#c0392b}
 .loader{display:flex;justify-content:center;align-items:center;padding:80px 0;color:var(--muted);font-size:15px;text-align:center;line-height:1.5}
 
-/* МОБИЛЬНАЯ ВЕРСИЯ */
+/* МОБИЛЬНАЯ ВЕРСИЯ (ИСПРАВЛЕНИЕ ДЛЯ ANDROID) */
 @media (max-width:680px){
-  .wrap{padding:0 14px}
+  .wrap{padding:0 10px} /* Уменьшили общие отступы */
   .hero{padding:24px 0 20px}
-  .card-head{padding:15px 16px}
-  thead th{padding:8px 8px;font-size:10px;}
-  thead th:nth-child(1){width:28px} /* Сжимаем колонку с номером */
-  thead th:nth-child(3){width:94px} /* Цена */
-  thead th:nth-child(4){width:76px} /* Заказ */
+  .card-head{padding:15px 12px; gap:10px;}
+  .card-head h2{font-size:15px;}
   
-  td{padding:10px 8px;font-size:13px;}
-  td.n{padding-top:11px;font-size:11.5px}
-  td.price{font-size:13.5px}
-  td.act{padding:10px 2px}
+  /* Жестко фиксируем ширину колонок */
+  thead th{padding:8px 4px;font-size:9.5px; text-align:center;}
+  thead th:nth-child(1){width:26px;} /* № */
+  thead th:nth-child(2){text-align:left;}
+  thead th:nth-child(3){width:80px;} /* Цена */
+  thead th:nth-child(4){width:66px;} /* Заказ */
   
-  .add{min-width:52px;height:30px;padding:0 6px;font-size:11.5px}
-  .add svg{width:12px;height:12px}
+  td{padding:10px 4px;font-size:13px;}
+  td.n{padding-top:11px;font-size:11px; text-align:center;}
+  td.name{ text-align:left; }
   
-  /* Уменьшаем размеры кнопок + и - в мобильной версии */
+  td.price{font-size:13px; padding-right:6px;}
+  td.price small{font-size:10px; line-height:1.2;}
+  
+  td.act{padding:10px 2px;}
+  
+  /* Уменьшаем кнопку добавления */
+  .add{
+    min-width:48px; 
+    height:28px; 
+    padding:0 4px; 
+    font-size:11px; 
+    gap:2px;
+    border-radius:6px;
+  }
+  .add svg{width:10px;height:10px;}
+  
+  /* Уменьшаем пульт управления */
   .row-controls { gap: 2px; }
-  .row-btn { width: 22px; height: 22px; font-size: 12px; border-width: 1px; border-radius: 4px;}
-  .row-qty { width: 22px; font-size: 12px; padding: 2px 0; }
+  .row-btn { width: 20px; height: 22px; font-size: 12px; border-width: 1px; border-radius: 4px;}
+  .row-qty { width: 22px; font-size: 11px; padding: 2px 0; }
 
-  .toolbar-inner{flex-wrap:wrap;gap:9px}.search{max-width:none;order:1;flex:1 1 100%}.counter{order:2;width:100%;text-align:right;margin-left:0}
+  .toolbar-inner{flex-wrap:wrap;gap:9px;padding:10px 0;}.search{max-width:none;order:1;flex:1 1 100%}.counter{order:2;width:100%;text-align:right;margin-left:0}
   
   .modal { top: 5dvh; height: 95dvh; max-height: 95dvh; border-radius: 20px 20px 0 0; display: block; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .modal-head { padding: 14px 16px; border-radius: 20px 20px 0 0; position: sticky; top: 0; background: #f8fcff; z-index: 10; }
@@ -292,8 +308,8 @@ td.act{text-align:center;padding:11px 14px}
 
   var cart = {};
   var client = { name:'', phone:'', delivery:'pickup', point:'', address:'' };
-  var STORAGE_CART   = 'price_cart_v35';
-  var STORAGE_CLIENT = 'price_client_v34';
+  var STORAGE_CART   = 'price_cart_v36';
+  var STORAGE_CLIENT = 'price_client_v35';
   var allRows = [];
 
   try { var s1 = localStorage.getItem(STORAGE_CART); if (s1) cart = JSON.parse(s1) || {}; } catch(e){}
